@@ -1,11 +1,11 @@
-// Fondo del juego: degradado procedural, sin texturas y sin codigo por frame.
-// Se pinta en un ColorRect a pantalla completa (nodo "Background" de main.tscn).
-// El ciclo lo lleva TIME, asi que main.gd no toca el fondo: el coste por frame
-// es un fullscreen quad sin ninguna lectura de textura.
+// Game background: procedural gradient, no textures and no per-frame code.
+// It is painted on a full screen ColorRect (the "Background" node in main.tscn).
+// The cycle is driven by TIME, so main.gd never touches the background: the
+// cost per frame is a single fullscreen quad with no texture reads at all.
 //
-// PALETA "oceano profundo": para cambiarla, editar estos 4 const.
-// TUNE: period = segundos por vuelta, swing = inclinacion del eje en radianes,
-// rise = cuanto sube/baja el centro, span = media-longitud del eje.
+// PALETTE "deep ocean": to change it, edit these 4 constants.
+// TUNE: period = seconds per loop, swing = axis tilt in radians,
+// rise = how far the centre moves up/down, span = half-length of the axis.
 
 shader_type canvas_item;
 

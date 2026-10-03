@@ -1,6 +1,6 @@
 extends RigidBody2D
 class_name BasketBall
-## Mini-balón del juguete de agua. Flota, deriva y recibe chorros de la bomba.
+## Mini ball from the water toy. Floats, drifts and takes hits from the pumps.
 
 @export var ball_radius: float = 20.0
 @export var ball_color: Color = Color(0.95, 0.45, 0.15)
@@ -35,13 +35,13 @@ func _ready() -> void:
 	_apply_scored_visual()
 
 func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
-	# Flotación del agua + vaivén para que no se queden quietas.
+	# Water buoyancy plus a sway so they never sit still.
 	var t := Time.get_ticks_msec() / 1000.0
 	var sway := sin(t * _swim_speed + _swim_phase) * 22.0
 	state.apply_central_force(Vector2(sway, -32.0))
 
 func pump(side: float = 0.0) -> void:
-	# side: -1 chorro derecho empuja a la izquierda, +1 al revés, 0 chorro central.
+	# side: -1 right jet pushes left, +1 the other way round, 0 centre jet.
 	var up := randf_range(-260.0, -380.0)
 	var lateral := side * randf_range(80.0, 150.0) + randf_range(-45.0, 45.0)
 	apply_central_impulse(Vector2(lateral, up))
@@ -59,8 +59,8 @@ func _ensure_sprite() -> void:
 		add_child(sprite)
 	if ball_texture != null:
 		sprite.texture = ball_texture
-	# Asset de 64px con pelota de ~60px de diámetro: escala para que
-	# coincida con ball_radius (diámetro físico = ball_radius * 2).
+	# 64px asset with a ~60px ball: scaled so it lines up with ball_radius
+	# (physical diameter = ball_radius * 2).
 	var world_diameter := ball_radius * 2.0
 	sprite.scale = Vector2.ONE * (world_diameter / 60.0)
 

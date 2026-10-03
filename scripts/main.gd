@@ -1,7 +1,7 @@
 extends Node2D
-## Water Game de baloncesto como el juguete de la foto.
-## Tanque central, canasta verde arriba, 9 mini-balones flotando, 2 bombas abajo.
-## PC: A / Flecha izq = bomba izq, D / Flecha der = bomba der, Espacio = ambas, Click izq/der del tanque igual.
+## Water basketball game like the toy in the photo.
+## Central tank, green hoop on top, 9 floating mini balls, 2 pumps at the bottom.
+## Keyboard: A / Left arrow = left pump, D / Right arrow = right pump, Space = both, left/right click works the same.
 
 const BallScene: PackedScene = preload("res://scenes/ball.tscn")
 
@@ -10,9 +10,9 @@ const HOOP_Y := 240.0
 const HOOP_LEFT_X := 595.0
 const HOOP_RIGHT_X := 685.0
 const NUM_BALLS := 9
-# Válvula anti-trampa: bloquea la subida desde abajo a través del aro.
-# El HoopValve del main.tscn (one-way hacia arriba) ya lo impide a nivel físico;
-# este tope por código lo hace imposible aunque haya tunelado a alta velocidad.
+	# Anti-cheat valve: blocks passing upward through the hoop from below.
+	# The HoopValve in main.tscn (one-way upward) already prevents it physically;
+	# this code level stop makes it impossible even if a fast ball tunnels through.
 const VALVE_HALF_WIDTH := 37.0
 const VALVE_BLOCK_DIST := 34.0
 
@@ -37,12 +37,12 @@ const BALL_TEXTURES := [
 
 var balls: Array[BasketBall] = []
 var score: int = 0
-# Historial top-only: solo cuenta si el balón estuvo por encima del aro antes de entrar.
+	# Top-only history: only counts if the ball was above the hoop before entering.
 var _was_above: Dictionary = {}
-# Si el balón subió desde abajo atravesando el aro, la siguiente bajada no cuenta.
-# Se resetea solo cuando el balón se aleja claramente (muy por encima o muy por debajo).
+	# If the ball came up from below through the hoop, the next descent does not count.
+	# It resets on its own once the ball moves clearly away, well above or well below.
 var _came_from_below: Dictionary = {}
-# Altura previa de cada balón para detectar el cruce del plano del aro.
+	# Previous height of each ball, used to detect the hoop plane crossing.
 var _prev_y: Dictionary = {}
 
 @onready var balls_container: Node2D = $Balls
@@ -55,13 +55,13 @@ var _prev_y: Dictionary = {}
 @onready var left_pump: TextureButton = $UI/BottomBar/LeftPump
 @onready var right_pump: TextureButton = $UI/BottomBar/RightPump
 
-# Pop rapido de 10 frames a todo color: 0 idle, 1-5 hundido, 6-9 rebote.
-# Sin cooldown: cada pulsacion bombea al instante. Se cargan en _ready.
+	# Quick 10 frame full colour pop: 0 idle, 1-5 pressed, 6-9 bouncing back.
+	# No cooldown: every press pumps instantly. Frames are loaded in _ready.
 const PRESS_COUNT := 10
 const FRAME60 := 1.0 / 60.0
 var _left_press: Array[Texture2D] = []
 var _right_press: Array[Texture2D] = []
-# Guarda la secuencia activa por boton para que una pulsacion nueva cancele la anterior.
+	# Keeps the active sequence per button so a new press cancels the previous one.
 var _pump_anim_seq: Dictionary = {}
 
 func _ready() -> void:
@@ -70,7 +70,7 @@ func _ready() -> void:
 	spawn_balls()
 	score_area.body_entered.connect(_on_score_area)
 	$UI/TopBar/ResetButton.pressed.connect(reset_game)
-	# button_down = respuesta inmediata al pulsar.
+	# button_down gives an immediate response on press.
 	left_pump.button_down.connect(func() -> void: pump_left())
 	right_pump.button_down.connect(func() -> void: pump_right())
 	_update_ui()
@@ -100,7 +100,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
 		if mb.button_index == MOUSE_BUTTON_LEFT and mb.pressed:
-			# Click a la izquierda del centro = bomba izq, a la derecha = bomba der.
+			# Click left of centre = left pump, right of centre = right pump.
 			if mb.position.x < 640.0:
 				pump_left()
 			else:
@@ -110,10 +110,10 @@ func _process(_delta: float) -> void:
 	_check_unscore()
 
 func _physics_process(_delta: float) -> void:
-	# Detección principal: cruce del plano del aro de arriba hacia abajo.
-	# No depende del timing del body_entered, así que una entrada lenta
-	# tras rebotar en el borde también cuenta.
-	# El Area2D queda como respaldo.
+	# Main detection: crossing the hoop plane from top to bottom.
+	# It does not depend on body_entered timing, so a slow entry
+	# after bouncing off the rim still counts.
+	# The Area2D stays as a fallback.
 	var center_x := (HOOP_LEFT_X + HOOP_RIGHT_X) * 0.5
 	for ball in balls:
 		if not is_instance_valid(ball):
@@ -122,14 +122,14 @@ func _physics_process(_delta: float) -> void:
 		var pos := ball.global_position
 		var prev: float = _prev_y.get(id, pos.y)
 		var inside := absf(pos.x - center_x) <= 38.0
-		# Válvula física por código: imposible subir desde abajo.
-		# Solo actúa subiendo (vel.y < 0) y dentro del hueco del aro.
-		# Bajando desde arriba no toca nada para no frenar la canasta.
+		# Code level physical valve: passing upward from below is impossible.
+		# It only acts while going up (vel.y < 0) and inside the hoop gap.
+		# Coming down from above it does nothing, so scoring is never slowed.
 		if absf(pos.x - center_x) <= VALVE_HALF_WIDTH:
 			var vel: Vector2 = ball.linear_velocity
 			var min_center_y := HOOP_Y + ball.ball_radius + 2.0
 			if prev >= HOOP_Y and pos.y < HOOP_Y:
-				# Tunelado en un frame: devolver debajo y matar impulso.
+				# Tunnelled in one frame: put it back below and kill the impulse.
 				ball.global_position = Vector2(pos.x, min_center_y)
 				ball.linear_velocity = Vector2(vel.x * 0.3, 60.0)
 				pos = ball.global_position
@@ -138,20 +138,20 @@ func _physics_process(_delta: float) -> void:
 				if pos.y < min_center_y:
 					ball.global_position = Vector2(pos.x, min_center_y)
 					pos = ball.global_position
-		# Subida desde abajo atravesando el aro: invalida la próxima bajada.
-		# Sin esto, un balón que sube desde abajo, asoma un poco por encima
-		# y vuelve a caer contaría como canasta aunque nunca entró desde arriba.
+		# Passing up from below through the hoop: invalidates the next descent.
+		# Without this, a ball that rises from below, pokes slightly above
+		# and falls back down would count as a score even though it never came from above.
 		if prev >= HOOP_Y and pos.y < HOOP_Y and inside:
 			_came_from_below[id] = true
 		elif pos.y < HOOP_Y - 80.0 or pos.y > HOOP_Y + 50.0:
-			# Balón claramente fuera del aro: nuevo intento válido.
+			# Ball clearly away from the hoop: a new attempt is valid.
 			_came_from_below[id] = false
 		if prev < HOOP_Y and pos.y >= HOOP_Y:
 			_try_score_crossing(ball)
 		_prev_y[id] = pos.y
-		# Marca qué balones estuvieron claramente por encima del aro.
-		# Así un toque desde abajo nunca puede contar en el Area2D, aunque
-		# rebote y la velocidad se invierta en el mismo frame del body_entered.
+		# Marks which balls were clearly above the hoop.
+		# This way a touch from below can never count in the Area2D, even if
+		# it bounces and the velocity flips on the same frame as body_entered.
 		if pos.y < HOOP_Y - 18.0:
 			_was_above[id] = true
 		elif pos.y > HOOP_Y + 50.0:
@@ -171,7 +171,7 @@ func _load_pump_frames() -> void:
 		_right_press.append(load("res://assets/sprites/button_D_press_%02d.png" % i) as Texture2D)
 
 func _animate_pump(btn: TextureButton, press: Array[Texture2D]) -> void:
-	# Pop de 0.15s a todo color. Sin tweens: todo viene de los sprites.
+	# 0.15s full colour pop. No tweens: everything comes from the sprites.
 	if not is_instance_valid(btn):
 		return
 	if press.size() < PRESS_COUNT or press[0] == null:
@@ -181,8 +181,8 @@ func _animate_pump(btn: TextureButton, press: Array[Texture2D]) -> void:
 	_play_pump_frames(btn, id, int(_pump_anim_seq[id]), press)
 
 func _show_pump_frame(btn: TextureButton, tex: Texture2D) -> void:
-	# Se actualizan normal Y hover: sin texture_pressed, al mantener pulsado
-	# Godot mostraria el hover estatico y taparia la animacion.
+	# Both normal and hover are updated: without texture_pressed, holding the button
+	# would show the static hover image and cover the animation.
 	btn.texture_normal = tex
 	btn.texture_hover = tex
 
@@ -241,8 +241,8 @@ func _on_score_area(body: Node2D) -> void:
 	var ball := body as BasketBall
 	if ball.scored:
 		return
-	# Solo desde arriba: tiene que venir cayendo, centrado y haber
-	# estado por encima del aro antes de entrar.
+	# Only from above: it has to come down falling, centred, and have
+	# been above the hoop before entering.
 	if ball.linear_velocity.y < 20.0:
 		return
 	if absf(ball.linear_velocity.x) > 260.0:
@@ -259,9 +259,9 @@ func _on_score_area(body: Node2D) -> void:
 	_award(ball)
 
 func _try_score_crossing(ball: BasketBall) -> void:
-	# El centro cruzó el plano del aro de arriba hacia abajo.
-	# Además exigimos historial top-only: haber estado claramente por encima
-	# y no haber subido desde abajo a través del aro justo antes.
+	# The centre crossed the hoop plane from top to bottom.
+	# We also require top-only history: having been clearly above
+	# and not having come up from below through the hoop just before.
 	if ball.scored:
 		return
 	if ball.linear_velocity.y <= 0.0:
@@ -286,7 +286,7 @@ func _award(ball: BasketBall) -> void:
 	_update_ui()
 
 func _check_unscore() -> void:
-	# Si un balón encestado se sale del aro, pierde el punto.
+	# If a scored ball leaves the hoop, it loses the point.
 	var changed := false
 	for ball in balls:
 		if is_instance_valid(ball) and ball.scored:
