@@ -1,0 +1,25 @@
+[gd_scene load_steps=5 format=3 uid="uid://baskball01pc"]
+
+[ext_resource type="Script" path="res://scripts/ball.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ball_orange.png" id="2"]
+
+[sub_resource type="PhysicsMaterial" id="phys_mat"]
+bounce = 0.38
+friction = 0.4
+
+[sub_resource type="CircleShape2D" id="ball_shape"]
+radius = 20.0
+
+[node name="BasketBall" type="RigidBody2D"]
+collision_layer = 2
+collision_mask = 1
+mass = 0.4
+physics_material_override = SubResource("phys_mat")
+script = ExtResource("1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("ball_shape")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.666667, 0.666667)
+texture = ExtResource("2")

@@ -1,0 +1,317 @@
+[gd_scene format=3 uid="uid://quaringsmain"]
+
+[ext_resource type="Script" uid="uid://c2r0w3mgmfybv" path="res://scripts/main.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://fboo7s82isu1" path="res://assets/sprites/bubble_01.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://dj2sosk0jdn5n" path="res://assets/sprites/bubble_04_micro.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://c21w050drsjy" path="res://assets/sprites/bubble_02.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://bd21stoedhsrj" path="res://assets/sprites/hoop.png" id="5"]
+[ext_resource type="Texture2D" uid="uid://dsoh57pnlgbg5" path="res://assets/sprites/tank_water.png" id="7"]
+[ext_resource type="Texture2D" uid="uid://d11v4qnjxc55d" path="res://assets/sprites/toy_base.png" id="8"]
+[ext_resource type="Texture2D" uid="uid://dhg3c2hpydh0g" path="res://assets/sprites/toy_lid.png" id="9"]
+[ext_resource type="Texture2D" uid="uid://p8ktqoqhqtuw" path="res://assets/sprites/tank_glass.png" id="10"]
+[ext_resource type="Texture2D" uid="uid://oderub5gy5ip" path="res://assets/sprites/button_A_press_00.png" id="11"]
+[ext_resource type="Texture2D" uid="uid://b6iew7pcy2lxk" path="res://assets/sprites/button_D_press_00.png" id="13"]
+[ext_resource type="Shader" uid="uid://sei251mpxlfh" path="res://shaders/fondo_oceano.gdshader" id="20"]
+
+[sub_resource type="RectangleShape2D" id="floor_shape"]
+size = Vector2(400, 20)
+
+[sub_resource type="RectangleShape2D" id="wall_v_shape"]
+size = Vector2(20, 500)
+
+[sub_resource type="RectangleShape2D" id="wall_h_shape"]
+size = Vector2(400, 20)
+
+[sub_resource type="CircleShape2D" id="rim_shape"]
+radius = 8.0
+
+[sub_resource type="RectangleShape2D" id="valve_shape"]
+size = Vector2(74, 10)
+
+[sub_resource type="RectangleShape2D" id="score_shape"]
+size = Vector2(76, 18)
+
+[sub_resource type="LabelSettings" id="score_settings"]
+font_size = 36
+outline_size = 6
+outline_color = Color(0.05, 0.07, 0.12, 1)
+
+[sub_resource type="LabelSettings" id="small_settings"]
+font_size = 19
+font_color = Color(0.85, 0.92, 1, 1)
+
+[sub_resource type="ShaderMaterial" id="ocean_material"]
+shader = ExtResource("20")
+
+[node name="Main" type="Node2D" unique_id=2020397395]
+script = ExtResource("1")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1362995246]
+material = SubResource("ocean_material")
+offset_right = 1280.0
+offset_bottom = 720.0
+mouse_filter = 2
+z_index = -100
+
+[node name="TankWater" type="Sprite2D" parent="." unique_id=2117796279]
+z_index = -50
+position = Vector2(640, 360)
+texture = ExtResource("7")
+
+[node name="ToyBase" type="Sprite2D" parent="." unique_id=77840827]
+z_index = -40
+position = Vector2(640, 655)
+texture = ExtResource("8")
+
+[node name="ToyLid" type="Sprite2D" parent="." unique_id=977289284]
+z_index = -40
+position = Vector2(640, 105)
+texture = ExtResource("9")
+
+[node name="TankGlass" type="Sprite2D" parent="." unique_id=1388580454]
+z_index = 20
+position = Vector2(640, 360)
+texture = ExtResource("10")
+
+[node name="Court" type="StaticBody2D" parent="." unique_id=818000956]
+collision_mask = 0
+
+[node name="Floor" type="CollisionShape2D" parent="Court" unique_id=473039511]
+position = Vector2(640, 605)
+shape = SubResource("floor_shape")
+
+[node name="LeftWall" type="CollisionShape2D" parent="Court" unique_id=946951094]
+position = Vector2(455, 360)
+shape = SubResource("wall_v_shape")
+
+[node name="RightWall" type="CollisionShape2D" parent="Court" unique_id=1233976166]
+position = Vector2(825, 360)
+shape = SubResource("wall_v_shape")
+
+[node name="Ceiling" type="CollisionShape2D" parent="Court" unique_id=1683145636]
+position = Vector2(640, 115)
+shape = SubResource("wall_h_shape")
+
+[node name="RimLeft" type="StaticBody2D" parent="." unique_id=1299882304]
+position = Vector2(595, 240)
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RimLeft" unique_id=1588267638]
+shape = SubResource("rim_shape")
+
+[node name="RimRight" type="StaticBody2D" parent="." unique_id=236497881]
+position = Vector2(685, 240)
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RimRight" unique_id=566276198]
+shape = SubResource("rim_shape")
+
+[node name="HoopValve" type="StaticBody2D" parent="." unique_id=934566337]
+position = Vector2(640, 240)
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HoopValve" unique_id=1177636773]
+shape = SubResource("valve_shape")
+one_way_collision = true
+one_way_collision_margin = 2.0
+one_way_collision_direction = Vector2(0, -1)
+
+[node name="ScoreArea" type="Area2D" parent="." unique_id=792435402]
+position = Vector2(640, 248)
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ScoreArea" unique_id=869224238]
+shape = SubResource("score_shape")
+
+[node name="HoopSprite" type="Sprite2D" parent="." unique_id=1811373382]
+position = Vector2(640, 285)
+scale = Vector2(1.25, 1.25)
+texture = ExtResource("5")
+
+[node name="Balls" type="Node2D" parent="." unique_id=257584072]
+
+[node name="JetLeft" type="CPUParticles2D" parent="." unique_id=861628426]
+position = Vector2(530, 585)
+emitting = false
+amount = 26
+texture = ExtResource("2")
+lifetime = 1.6
+one_shot = true
+explosiveness = 0.78
+randomness = 0.45
+emission_shape = 1
+emission_sphere_radius = 12.0
+direction = Vector2(0, -1)
+spread = 14.0
+gravity = Vector2(0, -260)
+initial_velocity_min = 280.0
+initial_velocity_max = 520.0
+damping_min = 30.0
+damping_max = 80.0
+scale_amount_min = 0.1
+scale_amount_max = 0.24
+color = Color(0.85, 0.95, 1, 0.95)
+hue_variation_min = -0.03
+hue_variation_max = 0.03
+
+[node name="JetLeftTiny" type="CPUParticles2D" parent="." unique_id=1140165851]
+position = Vector2(530, 585)
+emitting = false
+amount = 20
+texture = ExtResource("3")
+lifetime = 1.2
+one_shot = true
+explosiveness = 0.8
+randomness = 0.5
+emission_shape = 1
+emission_sphere_radius = 14.0
+direction = Vector2(0, -1)
+spread = 18.0
+gravity = Vector2(0, -220)
+initial_velocity_min = 200.0
+initial_velocity_max = 420.0
+damping_min = 20.0
+damping_max = 60.0
+scale_amount_min = 0.15
+scale_amount_max = 0.4
+color = Color(0.9, 0.97, 1, 0.9)
+
+[node name="JetRight" type="CPUParticles2D" parent="." unique_id=494111262]
+position = Vector2(750, 585)
+emitting = false
+amount = 26
+texture = ExtResource("2")
+lifetime = 1.6
+one_shot = true
+explosiveness = 0.78
+randomness = 0.45
+emission_shape = 1
+emission_sphere_radius = 12.0
+direction = Vector2(0, -1)
+spread = 14.0
+gravity = Vector2(0, -260)
+initial_velocity_min = 280.0
+initial_velocity_max = 520.0
+damping_min = 30.0
+damping_max = 80.0
+scale_amount_min = 0.1
+scale_amount_max = 0.24
+color = Color(0.85, 0.95, 1, 0.95)
+hue_variation_min = -0.03
+hue_variation_max = 0.03
+
+[node name="JetRightTiny" type="CPUParticles2D" parent="." unique_id=1695928349]
+position = Vector2(750, 585)
+emitting = false
+amount = 20
+texture = ExtResource("3")
+lifetime = 1.2
+one_shot = true
+explosiveness = 0.8
+randomness = 0.5
+emission_shape = 1
+emission_sphere_radius = 14.0
+direction = Vector2(0, -1)
+spread = 18.0
+gravity = Vector2(0, -220)
+initial_velocity_min = 200.0
+initial_velocity_max = 420.0
+damping_min = 20.0
+damping_max = 60.0
+scale_amount_min = 0.15
+scale_amount_max = 0.4
+color = Color(0.9, 0.97, 1, 0.9)
+
+[node name="ScoreFX" type="CPUParticles2D" parent="." unique_id=1362038511]
+position = Vector2(640, 250)
+emitting = false
+amount = 22
+texture = ExtResource("4")
+lifetime = 1.1
+one_shot = true
+explosiveness = 0.9
+randomness = 0.4
+emission_shape = 1
+emission_sphere_radius = 8.0
+direction = Vector2(0, -1)
+spread = 55.0
+gravity = Vector2(0, -180)
+initial_velocity_min = 150.0
+initial_velocity_max = 340.0
+damping_min = 40.0
+damping_max = 90.0
+scale_amount_min = 0.08
+scale_amount_max = 0.2
+color = Color(0.65, 1, 0.7, 1)
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=68834823]
+
+[node name="TopBar" type="Control" parent="UI" unique_id=526519633]
+layout_mode = 3
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 80.0
+
+[node name="ScoreLabel" type="Label" parent="UI/TopBar" unique_id=1090829808]
+layout_mode = 0
+anchor_right = 1.0
+offset_top = 10.0
+offset_bottom = 52.0
+label_settings = SubResource("score_settings")
+horizontal_alignment = 1
+
+[node name="HintLabel" type="Label" parent="UI/TopBar" unique_id=2006159160]
+layout_mode = 0
+anchor_right = 1.0
+offset_top = 52.0
+offset_bottom = 76.0
+label_settings = SubResource("small_settings")
+horizontal_alignment = 1
+
+[node name="ResetButton" type="Button" parent="UI/TopBar" unique_id=1977104000]
+layout_mode = 0
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -150.0
+offset_top = 12.0
+offset_right = -20.0
+offset_bottom = 48.0
+
+[node name="BottomBar" type="Control" parent="UI" unique_id=365597421]
+layout_mode = 3
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -96.0
+
+[node name="LeftPump" type="TextureButton" parent="UI/BottomBar" unique_id=1225301758]
+layout_mode = 0
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -140.0
+offset_top = -9.0
+offset_right = -60.0
+offset_bottom = 71.0
+pivot_offset = Vector2(40, 40)
+focus_mode = 0
+texture_normal = ExtResource("11")
+texture_hover = ExtResource("11")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="RightPump" type="TextureButton" parent="UI/BottomBar" unique_id=684102913]
+layout_mode = 0
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = 60.0
+offset_top = -9.0
+offset_right = 140.0
+offset_bottom = 71.0
+pivot_offset = Vector2(40, 40)
+focus_mode = 0
+texture_normal = ExtResource("13")
+texture_hover = ExtResource("13")
+ignore_texture_size = true
+stretch_mode = 0
