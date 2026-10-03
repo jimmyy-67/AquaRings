@@ -1,121 +1,101 @@
 # AquaRings
 
-Juego de agua con minibalones de baloncesto. Nueve balones flotan dentro de un
-tanque con una canasta en el techo. Dos bombas en la base soplan chorros de agua
-que empujan a todos los balones a la vez. Tu único trabajo es elegir en qué
-momento y con qué fuerza disparar los chorros para encestar.
+A water basketball toy for Windows, macOS and Linux, made with Godot 4.7.
+Nine mini balls drift inside a tank with a hoop on the ceiling, and two pumps
+at the bottom fire water jets that push every ball at once.
 
-No hay control por personaje: los balones son cuerpos rígidos con física real y
-se mueven solos. Adivinar su trayectoria es el juego.
 
----
+## Features
 
-## Descargas
 
-| Plataforma | Archivo | Notas |
-|---|---|---|
-| Windows 64-bit | `AquaRings.exe` | Windows 10 o superior |
-| Windows 32-bit | `AquaRings_x86_32.exe` | Solo para sistemas de 32 bits |
-| macOS | `AquaRings.zip` | Universal: Intel y Apple Silicon |
-| Linux | `AquaRings.x86_64` | Marca el archivo como ejecutable |
+- No character to control: the balls are rigid bodies with real physics, so
+  reading where they will be is the whole game.
+- Two pumps, left and right, each pushing all nine balls. Every jet is
+  randomised, so the same press twice never gives the same result.
+- Scoring is picky on purpose. A ball scores falling through the hoop centred,
+  slowly and from above. Fast shots across the rim do not count, and a ball
+  that pokes up from underneath and comes back down does not fool it either.
+- A point is lost again if the scored ball drifts out of the hoop.
+- Anti-cheat hoop: an invisible one-way collider stops balls passing upward
+  through the hoop, backed up by a second check in code for the case where a
+  fast ball tunnels anyway.
+- Animated background with no textures and no per-frame work: the shader runs
+  on `TIME`, so nothing in `main.gd` touches it.
+- Press animations for both pump buttons, driven by sprite sheets.
+- Runs on integrated graphics, including machines from around 2012. Uses the
+  compatibility renderer rather than Vulkan.
 
-Descomprime el `.zip` y ejecuta el binario. No necesita instalar nada.
 
-Si tu plataforma no aparece aquí, puedes compilar el juego tú mismo desde el
-código fuente: ver [Compilar desde el código](#compilar-desde-el-código).
+## Controls
 
----
 
-## Controles
+| Key | Action |
+| --- | ------ |
+| <kbd>A</kbd> or <kbd>←</kbd> | left pump |
+| <kbd>D</kbd> or <kbd>→</kbd> | right pump |
+| <kbd>Space</kbd> | both pumps at once |
+| <kbd>R</kbd> | restart |
 
-| Acción | Teclado | Ratón |
-|---|---|---|
-| Bomba izquierda | `A` o `←` | Click izquierdo del tanque |
-| Bomba derecha | `D` o `→` | Click derecho del tanque |
-| Ambas bombas | `Espacio` | — |
-| Reiniciar | `R` o botón *Reset* | — |
+There are two pump buttons at the bottom of the screen, and a reset button in
+the top bar.
 
-El click decide de lado por la mitad de la pantalla en la que hagas click, no
-por la del tanque.
 
-### Cómo se marca un punto
+## Downloads
 
-Un balón suma cuando cae por el aro **centrado, despacio y desde arriba**. Los
-tiros laterales rápidos no cuentan, y un balón que asoma por debajo del aro y
-vuelve a subir no engaña al detector. Si un balón encestado se sale de la zona
-del aro, pierde el punto.
 
----
+Binaries for 64 and 32 bit Windows, 64 bit Linux and macOS are in the
+**Releases** tab of this repository.
 
-## Requisitos
 
-- Windows 10+, macOS 10.13+ o una distribución de Linux de 2018 en adelante.
-- Tarjeta gráfica con OpenGL 3.3. Sirve cualquier GPU integrada: el juego usa el
-  renderer de compatibilidad, no Vulkan.
-- 2 GB de RAM.
+To build it yourself you need **standard** Godot 4.7, not the .NET or Mono
+build, and there are no dependencies: open the project and press
+<kbd>F5</kbd>. To produce an executable use *Project → Export*.
 
----
+Export templates have to be downloaded first, via *Editor → Manage Export
+Templates*. The `.import` files next to the assets are required; if Godot does
+not regenerate them, delete the `.godot/` folder and reopen the project.
 
-## Compilar desde el código
 
-Necesitas [Godot 4.7](https://godotengine.org/download) o superior. No hay
-dependencias adicionales ni plugins.
+## Development notes
 
-```bash
-git clone <url-del-repo>
-cd AquaRings
-```
 
-**Para jugar:** abre el proyecto en Godot y pulsa `F5`.
+A few things in the code are not obvious from reading it.
 
-**Para exportar:** `Editor > Manage Export Templates`, descarga las plantillas
-de la 4.7, y luego `Project > Export`. Cada destino genera un binario
-independiente.
 
-Los `.import` de los assets son necesarios. Si Godot no los regenera al abrir,
-borra la carpeta `.godot/` y vuelve a abrir el proyecto.
+**The mouse buttons are currently dead.** `main.gd` still contains a branch
+that would fire the left pump when clicking the left half of the screen and
+the right pump on the right half, but the `shoot` and `pump` input actions both
+also carry a left mouse button, so those presses are consumed by the keyboard
+branch first and the click never reaches the half-screen check. Fixing it means
+taking the mouse button out of the `shoot` and `pump` actions in
+`project.godot`, which leaves the keyboard working exactly as it is now.
 
----
 
-## Estructura
+**The score labels are empty.** `ScoreLabel` and `HintLabel` are in the scene
+and `main.gd` has an `_update_ui()` that is called on every scoring event, but
+the function body is a bare `pass`. The score is tracked correctly, it just is
+not drawn anywhere yet.
 
-```
-scenes/
-  main.tscn      Tanque, paredes, aro, valvula, UI y particulas
-  ball.tscn      Minibalon (RigidBody2D)
-  ring.tscn      Aro flotante (RigidBody2D, todavia no se instancia)
-scripts/
-  main.gd        Gestor: generacion, puntaje, deteccion de canasta, entrada
-  ball.gd        Flotacion, vaiven y chorros de bomba
-  ring.gd        Igual que ball.gd pero para aros
-shaders/
-  fondo_oceano.gdshader   Fondo degradado procedural, animado con TIME
-tools/
-  generate_tree_toy.py    Genera tree_toy.png (requiere Pillow)
-```
 
-### Decisiones que no son obvias al leer el código
+**`ring.gd` and `ring.tscn` are finished but unused.** Nothing in `main.tscn`
+instantiates a ring. Their collision shapes are a 12-circle donut with a hole
+in the middle, and they use a stronger pump impulse than the balls do.
 
-**El fondo no se toca desde el código.** `fondo_oceano.gdshader` se pinta en un
-`ColorRect` a pantalla completa y el ciclo lo lleva `TIME`, así que `main.gd`
-nunca lo actualiza. Cuesta un quad a pantalla completa por frame.
 
-**Hay dos capas contra el fraude.** Un aro invisible con colisión unidireccional
-en `main.tscn` impide que un balón suba por el aro a nivel físico, y
-`main.gd` añade un segundo tope por código (`VALVE_HALF_WIDTH`) que lo hace
-imposible incluso si hay tunelado a alta velocidad. El `Area2D` de anotado es
-solo un respaldo: la detección real es el cruce del plano del aro de arriba hacia
-abajo, que no depende del timing de entrada.
+**Physics constants are defined twice.** Mass and physics material appear both
+in `ball.tscn` and in `ball.gd`'s `_ready()`. The script assignments run last
+and win, so changing one of the two alone does nothing.
 
-**`ring.gd` y `ring.tscn` están listos pero sin usar.** No hay ningún nodo de aro
-instanciado en `main.tscn`.
 
-**Las constantes están duplicadas en `ball.tscn` y `ball.gd`.** Las asignaciones
-de `_ready()` son las que ganan, así que si tocas masa o material, toca también
-el script.
+**The gravity setting does not apply.** `project.godot` selects Jolt as the
+**3D** physics engine; this is a 2D game, so the balls run on the default
+GodotPhysics2D and that line has no effect.
 
----
 
-## Créditos
+## Credits and licences
 
-Gráficos generados con `tools/generate_tree_toy.py`. Motor: Godot 4.7.
+
+Engine by [Godot](https://godotengine.org), MIT. Sprites are generated by
+`tools/generate_tree_toy.py`, which needs Pillow.
+
+No licence file has been added to this repository yet.
